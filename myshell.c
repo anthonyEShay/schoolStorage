@@ -135,6 +135,13 @@ void exiter(){
 	exit(0);
 }
 
+
+void makeArgs(int whichIndex, char * toFill[] ){
+	int count = 0;
+	
+	
+}
+
 /**
 Pushes all the history structs back one so the latest struct can be put in the correct position
 */
@@ -143,6 +150,7 @@ void pushBack(){
 	for(x = 1; x < 10; ++x){
 		historyA[x-1].commNumb = historyA[x].commNumb;
 		strcpy(historyA[x-1].userInput, historyA[x].userInput);
+		//argsArrayCopier(x-1, historyA[x].userArgs);
 	}
 }
 
@@ -161,33 +169,17 @@ void argsMerger(char * toMerge[], char finalString[]){
 	
 }
 
+/**
+This takes the separated arguments and background int and runns history update functions
+and runs the functions that match the user commands
+*/
+void howToRespond(char *args[], int background){
+	char *tempArgs[(MAX_LINE/2)+1];
 
-int main(void)
-{
-
-
-/* set up the signal handler */
-      struct sigaction handler;
-      handler.sa_handler = handle_SIGQUIT;
-      handler.sa_flags = SA_RESTART;
-      sigaction(SIGQUIT, &handler, NULL);
-
-      strcpy(buffer,"\nHistory : \n");
-	
-char inputBuffer[MAX_LINE];      /* buffer to hold the command entered */
-    int background;              /* equals 1 if a command is followed by '&' */
-    char *args[(MAX_LINE/2)+1];  /* command line (of 80) has max of 40 arguments */
- 
-	historyLength = 0;
+	if(strcmp(args[0], "r") == 0){
+		printf("Got an r\n");
+	}else{
 	char finalString[90] = "";
-    promptNumber = 1;
-    int pid = getpid();
-    printf("\nWelcome to ASshell. My pid is %d\n", pid);
-
-    while (1){            
-       background = 0;
-       printf("\n ASshell[%d]:\n", promptNumber);
-       setup(inputBuffer,args,&background);       /* get next command */
 	argsMerger(args, finalString);
 	if(historyLength > 9){
 		pushBack();
@@ -225,6 +217,38 @@ char inputBuffer[MAX_LINE];      /* buffer to hold the command entered */
 		printf("Child process complete\n");
 	}
 	}
+	}
+}
+
+
+int main(void)
+{
+
+
+/* set up the signal handler */
+      struct sigaction handler;
+      handler.sa_handler = handle_SIGQUIT;
+      handler.sa_flags = SA_RESTART;
+      sigaction(SIGQUIT, &handler, NULL);
+
+      strcpy(buffer,"\nHistory : \n");
+	
+char inputBuffer[MAX_LINE];      /* buffer to hold the command entered */
+    int background;              /* equals 1 if a command is followed by '&' */
+    char *args[(MAX_LINE/2)+1];  /* command line (of 80) has max of 40 arguments */
+ 
+	historyLength = 0;
+	promptNumber = 1;
+
+    int pid = getpid();
+    printf("\nWelcome to ASshell. My pid is %d\n", pid);
+
+    while (1){            
+       background = 0;
+       printf("\n ASshell[%d]:\n", promptNumber);
+       setup(inputBuffer,args,&background);       /* get next command */
+	howToRespond(args, background);
+	
 
       /* the steps are:
        (0) if built-in command, handle internally
