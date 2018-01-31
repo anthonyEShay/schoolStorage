@@ -1,12 +1,23 @@
 #include <stdio.h>
+#include <signal.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 
 #define MAX_LINE 80 /* 80 chars per line, per command, should be enough. */
+#define BUFFER_SIZE 50
+
+static char buffer[BUFFER_SIZE];
 
  
+/* the signal handler function */
+void handle_SIGQUIT() {
+      write(STDOUT_FILENO,buffer,strlen(buffer));
+
+}
+
+
 /**
  * setup() reads in the next command line, separating it into distinct tokens
  * using whitespace as delimiters. setup() sets the args parameter as a
@@ -105,6 +116,15 @@ void exiter(){
 
 int main(void)
 {
+
+
+/* set up the signal handler */
+      struct sigaction handler;
+      handler.sa_handler = handle_SIGQUIT;
+      handler.sa_flags = SA_RESTART;
+      sigaction(SIGQUIT, &handler, NULL);
+
+      strcpy(buffer,"History : \n");
 	
 char inputBuffer[MAX_LINE];      /* buffer to hold the command entered */
     int background;              /* equals 1 if a command is followed by '&' */
