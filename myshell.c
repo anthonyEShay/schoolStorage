@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #define MAX_LINE 80 /* 80 chars per line, per command, should be enough. */
 
@@ -65,17 +66,72 @@ void setup(char inputBuffer[], char *args[],int *background)
      args[ct] = NULL; /* just in case the input line was > 80 */
 }
 
+/**
+Converts all characters in a string to uppercase and returns it
+*/
+char* compToUpper(char toEdit[]){
+	int counter = 0;
+	while(toEdit[counter] != '\0'){
+		toEdit[counter] = toupper(toEdit[counter]);
+		++counter;
+	}
+	return toEdit;
+}
+
+/**
+Prints out all arguments except the first to stdout, but in all caps
+*/
+void yeller(char *args[]){
+	int count = 1;
+	while(args[count] != NULL){
+		printf("%s ", compToUpper(args[count]));
+		++count;
+	}
+	printf("\n");
+}
+
+/**
+Prints out some statistics to stdout and then exits
+*/
+void exiter(){
+	char systemPrint[] = "ps -p ";
+	char pidNumb[32];
+	sprintf(pidNumb, "%d", getpid() );
+	strcat(systemPrint, pidNumb);
+	strcat(systemPrint, " -o pid,ppid,pcpu,pmem,etime,user,command");
+	system(systemPrint);
+	exit(0);
+}
 
 int main(void)
 {
+	
 char inputBuffer[MAX_LINE];      /* buffer to hold the command entered */
     int background;              /* equals 1 if a command is followed by '&' */
     char *args[(MAX_LINE/2)+1];  /* command line (of 80) has max of 40 arguments */
  
+    int promptNumber = 1;
+    int pid = getpid();
+    printf("\nWelcome to ASshell. My pid is %d\n", pid);
+
     while (1){            /* Program terminates normally inside setup */
        background = 0;
-       printf(" COMMAND->\n");
+       printf(" ASshell[%d]:\n", promptNumber);
+       ++promptNumber;
        setup(inputBuffer,args,&background);       /* get next command */
+
+       if(strcmp(args[0], "yell") == 0){
+	 yeller(args);
+       } else
+	if(strcmp(args[0], "exit") == 0){
+		exiter();
+	}else {
+	pid_t isChild = fork();
+	if(isChild == 0){
+		execvp(args[0], NULL);
+		exit(0);
+	}
+	}
 
       /* the steps are:
        (0) if built-in command, handle internally
