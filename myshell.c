@@ -12,12 +12,15 @@ static char buffer[BUFFER_SIZE];
 
 struct hiComm{
 	int commNumb;
+	int backGround;
 	char userInput[MAX_LINE];
 };
 
 static struct hiComm historyA[10];
 static int historyLength;
 static int promptNumber;
+static char tempUseString[90];
+static char *tempArgs[(MAX_LINE/2)+1];
 
 /* the signal handler function */
 void handle_SIGQUIT() {
@@ -137,7 +140,37 @@ void exiter(){
 
 
 void makeArgs(int whichIndex, char * toFill[] ){
-	int count = 0;
+	int length, i, start, ct;
+	ct = 0;
+	start = -1;
+	length = strlen(historyA[whichIndex].userInput);
+	strcpy(tempUseString, historyA[whichIndex].userInput);
+
+	for (i=0;i<length;i++) {
+        switch (tempUseString[i]){
+          case ' ':
+            if(start != -1){
+                    toFill[ct] = &tempUseString[start];    /* set up pointer */
+                ct++;
+            }
+            tempUseString[i] = '\0'; /* add a null char; make a C string */
+            start = -1;
+            break;
+          case '\n':                 /* should be the final char examined */
+            if (start != -1){
+                    toFill[ct] = &tempUseString[start];    
+                ct++;
+            }
+                tempUseString[i] = '\0';
+                toFill[ct] = NULL; /* no more arguments to this command */
+            break;
+          default :             /* some other character */
+            if (start == -1)
+                start = i;
+	}
+     }   
+     toFill[ct] = NULL; /* just in case the input line was > 80 */
+	
 	
 	
 }
@@ -174,19 +207,32 @@ This takes the separated arguments and background int and runns history update f
 and runs the functions that match the user commands
 */
 void howToRespond(char *args[], int background){
-	char *tempArgs[(MAX_LINE/2)+1];
 
 	if(strcmp(args[0], "r") == 0){
-		printf("Got an r\n");
+		if(args[1] == NULL){
+			if(historyLength > 9){
+				printf(">>> %s\n", historyA[9].userInput);
+				makeArgs(9, tempArgs);
+				howToRespond(tempArgs, historyA[9].backGround);
+			}else{
+				makeArgs(historyLength - 1, tempArgs);
+				printf(">>> %s\n", historyA[historyLength - 1].userInput);
+				howToRespond(tempArgs, historyA[historyLength - 1].backGround);
+			}
+		}
+	printf("all good");
+		
 	}else{
 	char finalString[90] = "";
 	argsMerger(args, finalString);
 	if(historyLength > 9){
 		pushBack();
 		historyA[9].commNumb = promptNumber;
+		historyA[9].backGround = background;
 		strcpy(historyA[9].userInput, finalString);
 	}else{
 		historyA[historyLength].commNumb = promptNumber;
+		historyA[historyLength].backGround = background;
 		strcpy(historyA[historyLength].userInput, finalString);
 		++historyLength;
 	}
