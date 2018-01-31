@@ -16,13 +16,16 @@ struct hiComm{
 	char userInput[MAX_LINE];
 };
 
-static struct hiComm historyA[10];
-static int historyLength;
-static int promptNumber;
-static char tempUseString[90];
+static struct hiComm historyA[10]; //Holds 10 most recent user commands
+static int historyLength;	//Used to tell where in the command array to input
+static int promptNumber;	//Used to keep track of how many commands inputed
+static char tempUseString[90];	
 static char *tempArgs[(MAX_LINE/2)+1];
 
-/* the signal handler function */
+/**
+The signal handler function, it builds a string for each command in history and
+writes it to stdout
+ */
 void handle_SIGQUIT() {
       write(STDOUT_FILENO,buffer,strlen(buffer));
 	int x;
@@ -138,7 +141,10 @@ void exiter(){
 	exit(0);
 }
 
-
+/**
+Creates a vector from the string stored in history struct. Borrows heavily from
+given code.
+*/
 void makeArgs(int whichIndex, char * toFill[] ){
 	int length, i, start, ct;
 	ct = 0;
@@ -171,8 +177,6 @@ void makeArgs(int whichIndex, char * toFill[] ){
      }   
      toFill[ct] = NULL; /* just in case the input line was > 80 */
 	
-	
-	
 }
 
 /**
@@ -183,7 +187,6 @@ void pushBack(){
 	for(x = 1; x < 10; ++x){
 		historyA[x-1].commNumb = historyA[x].commNumb;
 		strcpy(historyA[x-1].userInput, historyA[x].userInput);
-		//argsArrayCopier(x-1, historyA[x].userArgs);
 	}
 }
 
@@ -203,7 +206,7 @@ void argsMerger(char * toMerge[], char finalString[]){
 }
 
 /**
-This takes the separated arguments and background int and runns history update functions
+This takes the separated arguments and background int and runs history update functions
 and runs the functions that match the user commands
 */
 void howToRespond(char *args[], int background){
@@ -284,7 +287,6 @@ void howToRespond(char *args[], int background){
 int main(void)
 {
 
-
 /* set up the signal handler */
       struct sigaction handler;
       handler.sa_handler = handle_SIGQUIT;
@@ -307,14 +309,7 @@ char inputBuffer[MAX_LINE];      /* buffer to hold the command entered */
        background = 0;
        printf("\n ASshell[%d]:\n", promptNumber);
        setup(inputBuffer,args,&background);       /* get next command */
-	howToRespond(args, background);
-	
-
-      /* the steps are:
-       (0) if built-in command, handle internally
-       (1) if not, fork a child process using fork()
-       (2) the child process will invoke execvp()
-       (3) if background == 0, the parent will wait,
-            otherwise returns to the setup() function. */
+	howToRespond(args, background);		//Store and then run the inputed command
+      
     }
 }
