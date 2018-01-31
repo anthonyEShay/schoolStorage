@@ -17,6 +17,7 @@ struct hiComm{
 
 static struct hiComm historyA[10];
 static int historyLength;
+static int promptNumber;
 
 /* the signal handler function */
 void handle_SIGQUIT() {
@@ -33,6 +34,8 @@ void handle_SIGQUIT() {
 		write(STDOUT_FILENO,"\n",strlen("\n"));
 		strcpy(toPrint, "");
 	}
+	sprintf(toPrint, "\n ASshell[%d]:\n", promptNumber);
+	write(STDOUT_FILENO, toPrint, strlen(toPrint));
 }
 
 
@@ -169,7 +172,7 @@ int main(void)
       handler.sa_flags = SA_RESTART;
       sigaction(SIGQUIT, &handler, NULL);
 
-      strcpy(buffer,"History : \n");
+      strcpy(buffer,"\nHistory : \n");
 	
 char inputBuffer[MAX_LINE];      /* buffer to hold the command entered */
     int background;              /* equals 1 if a command is followed by '&' */
@@ -177,7 +180,7 @@ char inputBuffer[MAX_LINE];      /* buffer to hold the command entered */
  
 	historyLength = 0;
 	char finalString[90] = "";
-    int promptNumber = 1;
+    promptNumber = 1;
     int pid = getpid();
     printf("\nWelcome to ASshell. My pid is %d\n", pid);
 
