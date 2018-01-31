@@ -219,8 +219,22 @@ void howToRespond(char *args[], int background){
 				printf(">>> %s\n", historyA[historyLength - 1].userInput);
 				howToRespond(tempArgs, historyA[historyLength - 1].backGround);
 			}
+		}else{
+			int toBeRun = atoi(args[1]);
+			int x = 0;
+			int whichCommand = -1;
+			for(x; x < historyLength; ++x){
+				if(historyA[x].commNumb == toBeRun){
+					whichCommand = x;
+					break;
+				}
+			}
+			if(whichCommand != -1){
+				printf(">>> %s\n", historyA[whichCommand].userInput);
+				makeArgs(whichCommand, tempArgs);
+				howToRespond(tempArgs, historyA[whichCommand].backGround);
+			}
 		}
-	printf("all good");
 		
 	}else{
 	char finalString[90] = "";
