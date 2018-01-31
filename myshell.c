@@ -10,11 +10,29 @@
 
 static char buffer[BUFFER_SIZE];
 
- 
+struct hiComm{
+	int commNumb;
+	char userInput[MAX_LINE];
+};
+
+static struct hiComm historyA[10];
+static int historyLength;
+
 /* the signal handler function */
 void handle_SIGQUIT() {
       write(STDOUT_FILENO,buffer,strlen(buffer));
-
+	int x;
+	char toPrint[90] = "";
+	for(x = 0; x < historyLength; ++x){
+		char numb[32];
+		sprintf(numb, "%d", historyA[x].commNumb);
+		strcat(toPrint, numb);
+		strcat(toPrint, ")  ");
+		strcat(toPrint, historyA[x].userInput);
+		write(STDOUT_FILENO,toPrint,strlen(toPrint));
+		write(STDOUT_FILENO,"\n",strlen("\n"));
+		strcpy(toPrint, "");
+	}
 }
 
 
@@ -114,6 +132,16 @@ void exiter(){
 	exit(0);
 }
 
+void pushBack(){
+	int x;
+	for(x = 1; x < 10; ++x){
+		historyA[x-1].commNumb = historyA[x].commNumb;
+		strcpy(historyA[x-1].userInput, historyA[x].userInput);
+	}
+}
+
+
+
 int main(void)
 {
 
@@ -130,15 +158,25 @@ char inputBuffer[MAX_LINE];      /* buffer to hold the command entered */
     int background;              /* equals 1 if a command is followed by '&' */
     char *args[(MAX_LINE/2)+1];  /* command line (of 80) has max of 40 arguments */
  
+	historyLength = 0;
     int promptNumber = 1;
     int pid = getpid();
     printf("\nWelcome to ASshell. My pid is %d\n", pid);
 
-    while (1){            /* Program terminates normally inside setup */
+    while (1){            
        background = 0;
        printf("\n ASshell[%d]:\n", promptNumber);
-       ++promptNumber;
        setup(inputBuffer,args,&background);       /* get next command */
+	if(historyLength > 9){
+		pushBack();
+		historyA[9].commNumb = promptNumber;
+		strcpy(historyA[9].userInput, inputBuffer);
+	}else{
+		historyA[historyLength].commNumb = promptNumber;
+		strcpy(historyA[historyLength].userInput, inputBuffer);
+		++historyLength;
+	}
+	++promptNumber;
 
        if(strcmp(args[0], "yell") == 0){
 	 yeller(args);
