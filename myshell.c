@@ -132,6 +132,9 @@ void exiter(){
 	exit(0);
 }
 
+/**
+Pushes all the history structs back one so the latest struct can be put in the correct position
+*/
 void pushBack(){
 	int x;
 	for(x = 1; x < 10; ++x){
@@ -140,6 +143,20 @@ void pushBack(){
 	}
 }
 
+/**
+Merges the array of string pointers back into the original command so that it may be stored in
+the history structure
+*/
+void argsMerger(char * toMerge[], char finalString[]){
+	strcpy(finalString, "");
+	int count = 0;
+	while(toMerge[count] != NULL){
+		strcat(finalString, toMerge[count]);
+		strcat(finalString, " ");
+		++count;
+	}
+	
+}
 
 
 int main(void)
@@ -159,6 +176,7 @@ char inputBuffer[MAX_LINE];      /* buffer to hold the command entered */
     char *args[(MAX_LINE/2)+1];  /* command line (of 80) has max of 40 arguments */
  
 	historyLength = 0;
+	char finalString[90] = "";
     int promptNumber = 1;
     int pid = getpid();
     printf("\nWelcome to ASshell. My pid is %d\n", pid);
@@ -167,13 +185,14 @@ char inputBuffer[MAX_LINE];      /* buffer to hold the command entered */
        background = 0;
        printf("\n ASshell[%d]:\n", promptNumber);
        setup(inputBuffer,args,&background);       /* get next command */
+	argsMerger(args, finalString);
 	if(historyLength > 9){
 		pushBack();
 		historyA[9].commNumb = promptNumber;
-		strcpy(historyA[9].userInput, inputBuffer);
+		strcpy(historyA[9].userInput, finalString);
 	}else{
 		historyA[historyLength].commNumb = promptNumber;
-		strcpy(historyA[historyLength].userInput, inputBuffer);
+		strcpy(historyA[historyLength].userInput, finalString);
 		++historyLength;
 	}
 	++promptNumber;
