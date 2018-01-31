@@ -116,7 +116,7 @@ char inputBuffer[MAX_LINE];      /* buffer to hold the command entered */
 
     while (1){            /* Program terminates normally inside setup */
        background = 0;
-       printf(" ASshell[%d]:\n", promptNumber);
+       printf("\n ASshell[%d]:\n", promptNumber);
        ++promptNumber;
        setup(inputBuffer,args,&background);       /* get next command */
 
@@ -127,9 +127,22 @@ char inputBuffer[MAX_LINE];      /* buffer to hold the command entered */
 		exiter();
 	}else {
 	pid_t isChild = fork();
-	if(isChild == 0){
-		execvp(args[0], NULL);
+	char *toPrint;
+	if(isChild != 0){
+		if(background == 1){
+			toPrint = "TRUE";
+		}else{
+			toPrint = "False";
+		}
+		printf("[Child pid = %d, background = %s]\n", isChild, toPrint);
+	}else{
+		execvp(args[0], args);
 		exit(0);
+	}
+	if(background == 0){
+		int status = 0;
+		waitpid(isChild, &status, 0);
+		printf("Child process complete\n");
 	}
 	}
 
