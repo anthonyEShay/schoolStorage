@@ -115,10 +115,12 @@ int insert_item(buffer_item item){
 	if(empty.value == 0){
 		return -1;
 	}else{
+		wait(&mutex);
 		buffer[itemIn] = item;
 		--empty.value;
 		++full.value;
 		itemIn = (itemIn + 1) % BUFFER_SIZE;
+		signal(&mutex);
 	}
 	return 0;
 }
@@ -132,10 +134,12 @@ int remove_item(buffer_item* item){
 	if(empty.value == BUFFER_SIZE){
 		return -1;
 	}else{
+		wait(&mutex);
 		*item = buffer[itemOut];
 		++empty.value;
 		--full.value;
 		itemOut = (itemOut + 1) % BUFFER_SIZE;
+		signal(&mutex);
 	}
 	return 0;
 }
