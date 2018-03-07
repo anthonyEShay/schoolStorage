@@ -117,7 +117,7 @@ int insert_item(buffer_item item){
 		return -1;
 	}else{
 		wait(&mutex);
-		cout << "\nInsert_item inserted item " << item << "at position " << itemIn << endl;
+		cout << "\nInsert_item inserted item " << item << " at position " << itemIn << endl;
 		buffer[itemIn] = item;
 		--empty.value;
 		++full.value;
@@ -138,7 +138,7 @@ int remove_item(buffer_item* item){
 		return -1;
 	}else{
 		wait(&mutex);
-		cout << "\nRemove_item removed item " << buffer[itemOut] << "at position " << itemOut << endl;
+		cout << "\nRemove_item removed item " << buffer[itemOut] << " at position " << itemOut << endl;
 		*item = buffer[itemOut];
 		buffer[itemOut] = -1;
 		++empty.value;
@@ -181,7 +181,7 @@ void* producer(void* param){
 		item = 1 + rand() % 100;
 
 		if(insert_item(item) < 0){
-			cout << "Producer error" << endl;
+			cout << "Producer error - buffer full" << endl;
 		}else{
 			cout << "Producer thread " << pthread_self() << " inserted value " << item << endl;
 		}
@@ -205,7 +205,7 @@ void* consumer(void* param){
 
 //		remove a number (product) from the buffer and display it
 		if(remove_item(&item) <0){
-			cout << "Consumer error" << endl;
+			cout << "Consumer error - buffer empty" << endl;
 		}else{
 			cout << "Consumer thread " << pthread_self() << " removed value " << item << endl;
 		}
@@ -241,15 +241,23 @@ void block(semaphore *S){
 		}
 		temp->next = P;
 	}
-	string suspend = "kill -TSTP " + to_string(P->pid);
-	system(suspend.c_str());
+	/*
+	 * I was unable to find a workable solution in linux to reliably suspend threads without busy waiting.
+	 * The code below is how to suspend a process, but it does not work on threads.
+	 */
+//	string suspend = "kill -TSTP " + to_string(P->pid);
+//	system(suspend.c_str());
 }
 
 void wakeup(semaphore *S){
 	process *temp = S->list;
 	if(temp != nullptr){
 		S->list = S->list->next;
-		string unsuspend = "kill -CONT " + to_string(temp->pid);
+		/*
+		 * See explanation in block for 2 lines below
+		 */
+//		string unsuspend = "kill -CONT " + to_string(temp->pid);
+//		system(unsuspend.c_str());
 		delete temp;
 	}
 }
