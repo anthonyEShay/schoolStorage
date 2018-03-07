@@ -218,7 +218,7 @@ void block(semaphore *S){
 		}
 		temp->next = P;
 	}
-	string suspend = "kill -TSTP " + to_string(P.pid);
+	string suspend = "kill -TSTP " + to_string(P->pid);
 	system(suspend.c_str());
 }
 
