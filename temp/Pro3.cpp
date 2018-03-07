@@ -15,6 +15,7 @@ using namespace std;
 string timeToSleep;
 int numberProducer;
 int numberConsumer;
+void printBuffer();
 
 typedef struct{
 	int value;
@@ -116,6 +117,7 @@ int insert_item(buffer_item item){
 		return -1;
 	}else{
 		wait(&mutex);
+		cout << "\nInsert_item inserted item " << item << "at position " << itemIn << endl;
 		buffer[itemIn] = item;
 		--empty.value;
 		++full.value;
@@ -136,12 +138,26 @@ int remove_item(buffer_item* item){
 	}else{
 		wait(&mutex);
 		*item = buffer[itemOut];
+		buffer[itemOut] = -1;
 		++empty.value;
 		--full.value;
 		itemOut = (itemOut + 1) % BUFFER_SIZE;
 		signal(&mutex);
 	}
 	return 0;
+}
+
+void printBuffer(){
+	for(int x = 0; x < BUFFER_SIZE; ++x){
+		cout << "[";
+		if(buffer[x] == -1){
+			cout << "empty";
+		}else{
+			cout << buffer[x];
+		}
+		cout << "]";
+	}
+	cout << "\tin = " << itemIn << "  out = " << itemOut << endl << endl;
 }
 
 void* producer(void* param){
