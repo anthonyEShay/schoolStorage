@@ -113,7 +113,7 @@ int main(int argc, char *argv[]) {
  */
 int insert_item(buffer_item item){
 
-	if(empty.value == 0){
+	if(empty.value <= 0){
 		return -1;
 	}else{
 		wait(&mutex);
@@ -134,7 +134,7 @@ int insert_item(buffer_item item){
  */
 int remove_item(buffer_item* item){
 
-	if(empty.value == BUFFER_SIZE){
+	if(empty.value >= BUFFER_SIZE){
 		return -1;
 	}else{
 		wait(&mutex);
