@@ -122,6 +122,7 @@ int insert_item(buffer_item item){
 		--empty.value;
 		++full.value;
 		itemIn = (itemIn + 1) % BUFFER_SIZE;
+		printBuffer();
 		signal(&mutex);
 	}
 	return 0;
@@ -137,11 +138,13 @@ int remove_item(buffer_item* item){
 		return -1;
 	}else{
 		wait(&mutex);
+		cout << "\nRemove_item removed item " << buffer[itemOut] << "at position " << itemOut << endl;
 		*item = buffer[itemOut];
 		buffer[itemOut] = -1;
 		++empty.value;
 		--full.value;
 		itemOut = (itemOut + 1) % BUFFER_SIZE;
+		printBuffer();
 		signal(&mutex);
 	}
 	return 0;
